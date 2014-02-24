@@ -5,26 +5,21 @@
     , path = require('path')
     , passport = require('passport')
     , User = require('./user')
-    , LdsAuthStrategy = require('passport-ldsauth').Strategy
+    , AuthStrategy = require('./example-oauth2orize-consumer').Strategy
     , app = connect()
     , server
     , port = process.argv[2] || 0
-    , pConf = {
-        protocol: "http"
-      , host: "ldsauth.org"
-      }
-    , lConf = {
-        protocol: "http"
-      //, host: "oauth2consumer.helloworld3000.com:3001"
-      , host: "wardsteward.org:3002"
-      }
-      // for Ward Steward
+    , pConf = require('./provider-config')
+    , lConf = require('./consumer-config')
     , opts = require('./oauth-config')
     ;
 
   if (!connect.router) {
     connect.router = require('connect_router');
   }
+
+  // See http://stackoverflow.com/questions/18461979/node-js-error-with-ssl-unable-to-verify-leaf-signature
+  process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
 
   // Passport session setup.
   //   To support persistent login sessions, Passport needs to be able to
@@ -45,7 +40,7 @@
     done(null, user);
   });
 
-  passport.use(new LdsAuthStrategy({
+  passport.use(new AuthStrategy({
       // see https://github.com/jaredhanson/oauth2orize/blob/master/examples/all-grants/db/clients.js
       clientID: opts.clientId
     , clientSecret: opts.clientSecret
@@ -65,7 +60,7 @@
       if (false) { next(); }
       var request = require('request')
         , options = {
-            url: pConf.protocol + '://' + pConf.host + '/api/ldsorg/me'
+            url: pConf.protocol + '://' + pConf.host + '/api/userinfo'
           , headers: {
               'Authorization': 'Bearer ' + req.user.accessToken
             }
@@ -84,11 +79,11 @@
     });
     /*
     */
-    rest.get('/auth/example-oauth2orize', passport.authenticate('ldsauth', { scope: ['email'] }));
+    rest.get('/auth/example-oauth2orize', passport.authenticate('example-oauth2orize', { scope: ['email'] }));
     rest.get('/auth/example-oauth2orize/callback'
       //passport.authenticate('facebook', { successRedirect: '/close.html?accessToken=blar',
       //                                    failureRedirect: '/close.html?error=foo' }));
-    , passport.authenticate('ldsauth', { failureRedirect: '/close.html?error=foo' })
+    , passport.authenticate('example-oauth2orize', { failureRedirect: '/close.html?error=foo' })
     );
     rest.get('/auth/example-oauth2orize/callback'
     , function (req, res) {

@@ -60,7 +60,7 @@
       if (false) { next(); }
       var request = require('request')
         , options = {
-            url: pConf.protocol + '://' + pConf.host + '/api/userinfo'
+            url: pConf.protocol + '://' + pConf.host + '/api/v1/userinfo'
           , headers: {
               'Authorization': 'Bearer ' + req.user.accessToken
             }
